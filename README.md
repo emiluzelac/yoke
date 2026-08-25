@@ -228,6 +228,19 @@ Proxy. Serve a vision model on a separate endpoint and point
 `Yoke: Configure Vision Proxy` at it — an OpenAI-compatible
 chat-completions URL with its own model id, no key required.
 
+### Remote-SSH, Dev Containers, and WSL
+
+Yoke runs on your local machine by default, because that is usually where your
+endpoint is reachable — often through an SSH tunnel to `127.0.0.1`. Without this,
+opening a remote window would run Yoke on the remote host, where `127.0.0.1` is
+that machine and every request is refused with `ECONNREFUSED`.
+
+If the model server runs on the remote host instead, move Yoke there:
+
+```json
+"remote.extensionKind": { "yoketools.yoke": ["workspace"] }
+```
+
 ## Compared to alternatives
 
 | | This extension | Local proxy (e.g. LiteLLM) | Standalone DeepSeek extensions |
