@@ -104,6 +104,7 @@ code --install-extension dist/yoke-*.vsix
 | 设置项 | 默认值 | 作用 |
 |---|---|---|
 | `yoke.baseUrl` | 官方 DeepSeek API | 你的兼容 OpenAI 接口地址 |
+| `yoke.registryUrl` | *(无)* | 列出你所运行接口的注册表；会替代 `customModels` |
 | `yoke.customModels` | `[]` | 要暴露的模型，详见下文 |
 | `yoke.maxTokens` | `0` | 输出 token 上限（`0` 表示服务默认） |
 | `yoke.requestTimeoutMs` | `900000` | 超过该时长没有收到数据即放弃（`0` 表示一直等待） |
@@ -164,6 +165,19 @@ npm run verify-endpoint -- http://127.0.0.1:8888/v1
 `delta.reasoning_content` 返回、以及是否启用了工具调用，然后打印一段可直接粘贴的设置，
 其中的上下文长度取自服务本身并已完成换算。使用 `--model <id>` 指定模型，
 `--key <apiKey>` 用于需要鉴权的接口。该脚本仅依赖 Node 内置模块，无需构建扩展即可运行。
+
+### 用一处注册表替代多份副本
+
+当你有多台机器或多个接口时，同一份模型配置会被复制到每个客户端，而且每次调整
+lane 都要重新手工换算。将 `yoke.registryUrl` 指向一个列出你所运行接口的服务，
+这些副本就消失了：
+
+```json
+{ "yoke.registryUrl": "http://127.0.0.1:8899/registry" }
+```
+
+其中的模型会替代 `customModels`，从而在一处描述整个集群。扩展不会等待注册表：
+模型选择器使用上次返回的结果渲染；若注册表不可达，`customModels` 仍作为兜底。
 
 ### 上下文长度的换算
 

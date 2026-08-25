@@ -160,3 +160,18 @@ function readToolCalling(value: unknown): boolean | number | undefined {
 	}
 	return readPositiveInteger(value);
 }
+
+/** A registry payload is `{ models: [...] }`; entries reuse the customModels rules. */
+export function parseRegistryPayload(raw: unknown): {
+	models: ModelDefinition[];
+	problems: string[];
+} {
+	if (typeof raw !== 'object' || raw === null) {
+		return { models: [], problems: ['registry response was not an object'] };
+	}
+	const entries = (raw as { models?: unknown }).models;
+	if (entries === undefined) {
+		return { models: [], problems: ['registry response had no "models" array'] };
+	}
+	return validateCustomModels(entries);
+}

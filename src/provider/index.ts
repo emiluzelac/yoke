@@ -5,7 +5,8 @@ import { getBaseUrl, getStabilizeToolListEnabled } from '../config';
 import { isApiKeyRequired } from '../endpoint';
 import { t } from '../i18n';
 import { logger } from '../logger';
-import { getModels } from '../models/registry';
+import { getModels, refreshRegistry } from '../models/registry';
+import { invalidateRemoteModels } from '../models/remote';
 import { createCacheDiagnosticsRecorder, dumpProviderInput } from './debug';
 import { toChatInfo } from './models';
 import { BalanceCurrencyResolver } from './pricing/currency';
@@ -54,10 +55,14 @@ export class DeepSeekChatProvider implements vscode.LanguageModelChatProvider {
 			this.onDidChangeLanguageModelChatInformationEmitter,
 			// Settings-based fallback API key + base URL changes.
 			vscode.workspace.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration('yoke.registryUrl')) {
+					invalidateRemoteModels();
+				}
 				if (
 					e.affectsConfiguration('yoke.apiKey') ||
 					e.affectsConfiguration('yoke.baseUrl') ||
-					e.affectsConfiguration('yoke.customModels')
+					e.affectsConfiguration('yoke.customModels') ||
+					e.affectsConfiguration('yoke.registryUrl')
 				) {
 					this.invalidateCurrencyAndRefreshModels();
 				}
@@ -141,6 +146,10 @@ export class DeepSeekChatProvider implements vscode.LanguageModelChatProvider {
 		if (!this.isActive) {
 			return [];
 		}
+
+		// Fire-and-forget: the picker renders from the cached set, and a changed
+		// registry fires the change event to bring VS Code back for the new one.
+		refreshRegistry(() => this.onDidChangeLanguageModelChatInformationEmitter.fire());
 
 		const hasKey = await this.authManager.hasApiKey();
 		const isReady = hasKey || !isApiKeyRequired(getBaseUrl());

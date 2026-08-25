@@ -106,6 +106,7 @@ All three support optional thinking mode, tool calling, and 1M token context. Fl
 | Setting | Default | What it does |
 |---|---|---|
 | `yoke.baseUrl` | hosted DeepSeek API | Your OpenAI-compatible endpoint |
+| `yoke.registryUrl` | *(none)* | A registry that lists your endpoints; replaces `customModels` |
 | `yoke.customModels` | `[]` | The models to expose. See below |
 | `yoke.maxTokens` | `0` | Output token cap (`0` = server default) |
 | `yoke.requestTimeoutMs` | `900000` | Give up after this long with no data (`0` = never) |
@@ -171,6 +172,23 @@ calling is enabled — then prints a ready-to-paste settings block with the cont
 read off the server and the arithmetic already done. Add `--model <id>` to pick a specific
 model and `--key <apiKey>` for an authenticated endpoint. The script is standalone Node,
 so it runs without building the extension.
+
+### One registry instead of many copies
+
+Running more than one machine, or more than one endpoint, means the same model
+config gets copied into every client — and re-derived by hand every time a lane
+changes. Point `yoke.registryUrl` at a service that lists what you run and the
+copies go away:
+
+```json
+{ "yoke.registryUrl": "http://127.0.0.1:8899/registry" }
+```
+
+Its models replace `customModels`, so a fleet is described in one place. The
+registry is never waited on: the picker renders from the last set it returned, and
+if the registry is unreachable your `customModels` remain the fallback beneath it.
+[yoke-registry](https://github.com/emiluzelac/yoke) is a zero-dependency
+implementation that also reports whether each endpoint is ready, warming, or cold.
 
 ### Sizing the context window
 
