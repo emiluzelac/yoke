@@ -1,0 +1,319 @@
+{
+  "name": "yoke",
+  "displayName": "Yoke: Local Models for Copilot Chat",
+  "description": "Run self-hosted DeepSeek, Qwen, GLM and other OpenAI-compatible models in Copilot Chat \u2014 no hosted API key, no per-token charges.",
+  "icon": "resources/icon.png",
+  "version": "0.1.0",
+  "publisher": "yoketools",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emiluzelac/yoke"
+  },
+  "engines": {
+    "vscode": "^1.116.0",
+    "node": ">=24"
+  },
+  "categories": [
+    "AI",
+    "Chat",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "local",
+    "self-hosted",
+    "vllm",
+    "sglang",
+    "ollama",
+    "openai-compatible",
+    "deepseek",
+    "copilot",
+    "copilot chat",
+    "language model",
+    "byok",
+    "reasoning",
+    "vision",
+    "ai",
+    "chat"
+  ],
+  "activationEvents": [
+    "onUri",
+    "onStartupFinished"
+  ],
+  "enabledApiProposals": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languageModelChatProviders": [
+      {
+        "vendor": "yoke",
+        "displayName": "Yoke"
+      }
+    ],
+    "commands": [
+      {
+        "command": "yoke.setApiKey",
+        "title": "%yoke.command.setApiKey%"
+      },
+      {
+        "command": "yoke.getApiKey",
+        "title": "%yoke.command.getApiKey%"
+      },
+      {
+        "command": "yoke.clearApiKey",
+        "title": "%yoke.command.clearApiKey%"
+      },
+      {
+        "command": "yoke.setVisionModel",
+        "title": "%yoke.command.setVisionModel%"
+      },
+      {
+        "command": "yoke.openSettings",
+        "title": "%yoke.command.openSettings%"
+      },
+      {
+        "command": "yoke.showLogs",
+        "title": "%yoke.command.showLogs%"
+      },
+      {
+        "command": "yoke.openRequestDumpsFolder",
+        "title": "%yoke.command.openRequestDumpsFolder%"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "yokeGettingStarted",
+        "title": "%yoke.walkthrough.title%",
+        "description": "%yoke.walkthrough.description%",
+        "steps": [
+          {
+            "id": "setApiKey",
+            "title": "%yoke.walkthrough.setApiKey.title%",
+            "description": "%yoke.walkthrough.setApiKey.description%",
+            "media": {
+              "markdown": "resources/walkthrough/set-api-key.md"
+            },
+            "completionEvents": [
+              "onCommand:yoke.setApiKey"
+            ]
+          },
+          {
+            "id": "showModels",
+            "title": "%yoke.walkthrough.showModels.title%",
+            "description": "%yoke.walkthrough.showModels.description%",
+            "media": {
+              "markdown": "resources/walkthrough/show-models.md"
+            }
+          },
+          {
+            "id": "advancedSettings",
+            "title": "%yoke.walkthrough.advancedSettings.title%",
+            "description": "%yoke.walkthrough.advancedSettings.description%",
+            "media": {
+              "markdown": "resources/walkthrough/advanced-settings.md"
+            }
+          }
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "%yoke.config.title%",
+      "properties": {
+        "yoke.baseUrl": {
+          "type": "string",
+          "default": "https://api.deepseek.com",
+          "description": "%yoke.config.baseUrl.description%"
+        },
+        "yoke.maxTokens": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "%yoke.config.maxTokens.description%"
+        },
+        "yoke.requestTimeoutMs": {
+          "type": "number",
+          "default": 900000,
+          "minimum": 0,
+          "markdownDescription": "%yoke.config.requestTimeoutMs.description%"
+        },
+        "yoke.experimental.stabilizeToolList": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "%yoke.config.experimental.stabilizeToolList.description%",
+          "tags": [
+            "experimental"
+          ]
+        },
+        "yoke.modelIdOverrides": {
+          "type": "object",
+          "default": {},
+          "description": "%yoke.config.modelIdOverrides.description%",
+          "additionalProperties": false,
+          "properties": {
+            "deepseek-v4-flash": {
+              "type": "string",
+              "description": "%yoke.config.modelIdOverrides.deepseek-v4-flash.description%"
+            },
+            "deepseek-v4-pro": {
+              "type": "string",
+              "description": "%yoke.config.modelIdOverrides.deepseek-v4-pro.description%"
+            },
+            "deepseek-v4-flash-vision-exp": {
+              "type": "string",
+              "description": "%yoke.config.modelIdOverrides.deepseek-v4-flash-vision-exp.description%"
+            }
+          }
+        },
+        "yoke.customModels": {
+          "type": "array",
+          "default": [],
+          "markdownDescription": "%yoke.config.customModels.description%",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "maxInputTokens",
+              "maxOutputTokens"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "default": "local"
+              },
+              "version": {
+                "type": "string",
+                "default": "1"
+              },
+              "maxInputTokens": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "maxOutputTokens": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "toolCalling": {
+                "type": [
+                  "boolean",
+                  "integer"
+                ],
+                "default": 128
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": true
+              },
+              "nativeImageInput": {
+                "type": "boolean",
+                "default": false
+              },
+              "thinkingParam": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "deepseek"
+                ],
+                "default": "none"
+              },
+              "thinking": {
+                "type": "object",
+                "properties": {
+                  "supportedEfforts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "low",
+                        "high",
+                        "max"
+                      ]
+                    }
+                  },
+                  "defaultEffort": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "high",
+                      "max"
+                    ]
+                  },
+                  "canDisable": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "yoke.visionModel": {
+          "type": "string",
+          "default": "",
+          "tags": [
+            "advanced"
+          ],
+          "markdownDescription": "%yoke.config.visionModel.description%"
+        },
+        "yoke.visionPrompt": {
+          "type": "string",
+          "editPresentation": "multilineText",
+          "default": "Text extraction is mandatory. Visual description required except T2.5. See OUTPUT FORMAT.\n\n---\n\nTASK 1 - TEXT EXTRACTION (always):\n\n1. Transcribe every detectable character verbatim - all text, symbols, and glyphs of any kind, in any location. Never correct, alter, summarize, paraphrase, or truncate the source.\n\n2. Preserve formatting and spatial grouping:\n   - Monospaced \u2192 code block (hint if known). Triple backticks in source \u2192 4-backtick fence.\n   - Proportional \u2192 plain text, paragraph breaks.\n   - Tabular \u2192 Markdown table.\n   - Ambiguous \u2192 code block.\n\n3. Annotate spatial position:\n   - Isolated elements: label + colon.\n   - Multi-region: `[Region: name]` headers (avoids T1.4 collision).\n     [Region: name]\n     (content)\n\n4. Uncertainty markers (place at position):\n   [?] = uncertain char.\n   [unclear] = uncertain span.\n   [possible-artifact] = may not be text.\n   [unreadable] = illegible.\n   [truncated] = cut off at edge (place after last readable char).\n   Never guess or fabricate. If source contains a marker literally, backslash-escape it.\n\n5. Low-quality image: place after `--- Extracted Text ---`, before code block or transcription:\n   (Low image quality - confidence reduced.)\n\n6. No text: output \"No text detected.\" No code block, no other text.\n\n---\n\nTASK 2 - VISUAL DESCRIPTION (unless T2.5):\n\n1. Describe all non-text visual content.\n\n2. Text-heavy: describe application, window chrome, UI state, and color coding.\n\n3. Visual-primary: describe concisely but fully. Note color coding. Do not invent.\n\n4. Diagrams: describe structure - what labels represent, how elements connect. Diagram should be understandable from both sections.\n\n5. Omit Visual Context only for tightly cropped text. If any visual element beyond text is visible, include.\n\n---\n\nMULTIPLE IMAGES:\n\n- Label \"Image 1:\", \"Image 2:\", etc. Single image: skip label.\n- Combined summary only if images are related. If unsure, skip.\n\n---\n\nOUTPUT FORMAT:\n\nSingle image:\n--- Extracted Text ---\n[transcription]\n--- Visual Context ---\n[description]\n\nIf Visual Context omitted (T2.5), drop it.\n\nMultiple images (repeat for each):\nImage 1:\n--- Extracted Text ---\n[transcription]\n--- Visual Context ---\n[description]\n\n--- Combined Summary ---\n[summary - if applicable]\n\n---\n\nSPECIAL CASES:\n\n- Handwriting: best-effort; prepend \"(Handwriting - lower confidence.)\".\n- RTL: preserve direction; note in Visual Context.\n- Overlapping layers: extract all; flag [Foreground:] / [Background:].\n- Color: describe scheme in Visual Context only. Never encode in Extracted Text.\n- Image-in-image: treat as flat; note nesting in Visual Context.\n- Long lines: transcribe fully, no wrap; note overflow in Visual Context.\n\n---\n\nESCAPING - if source text contains a line exactly matching any format marker, backslash-escape it:\n\n- \\--- Extracted Text ---\n- \\--- Visual Context ---\n- \\--- Combined Summary ---\n- \\Image N: (standalone line immediately before a `---` marker)\n\nIf source contains any T1.4 marker literally, backslash-escape it.",
+          "markdownDescription": "%yoke.config.visionPrompt.description%"
+        },
+        "yoke.debugMode": {
+          "type": "string",
+          "default": "minimal",
+          "enum": [
+            "minimal",
+            "metadata",
+            "verbose"
+          ],
+          "enumItemLabels": [
+            "%yoke.config.debugMode.minimal.label%",
+            "%yoke.config.debugMode.metadata.label%",
+            "%yoke.config.debugMode.verbose.label%"
+          ],
+          "markdownEnumDescriptions": [
+            "%yoke.config.debugMode.minimal.description%",
+            "%yoke.config.debugMode.metadata.description%",
+            "%yoke.config.debugMode.verbose.description%"
+          ],
+          "markdownDescription": "%yoke.config.debugMode.description%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('out', { recursive: true, force: true, maxRetries: process.platform === 'win32' ? 10 : 0 })\"",
+    "vscode:prepublish": "bash .github/scripts/prepare-marketplace-readme.sh && npm run compile",
+    "compile": "npm run clean && tsc -p ./",
+    "test": "npm run compile && node --test \"out/**/*.test.js\"",
+    "verify-endpoint": "node scripts/verify-endpoint.mjs",
+    "check-name": "node scripts/check-name.mjs",
+    "watch": "npm run clean && tsc -watch -p ./",
+    "lint": "oxlint",
+    "format": "oxfmt --write src/",
+    "format:check": "oxfmt --check src/",
+    "package": "vsce package --readme-path dist/README.marketplace.md -o dist/",
+    "login": "vsce login Vizards"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/vscode": "^1.116.0",
+    "@vscode/vsce": "^3.9.1",
+    "ovsx": "0.10.12",
+    "oxfmt": "^0.47.0",
+    "oxlint": "^1.62.0",
+    "typescript": "^6.0.3"
+  },
+  "homepage": "https://yoke.codes"
+}

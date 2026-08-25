@@ -1,0 +1,250 @@
+import vscode from 'vscode';
+import { AuthManager } from '../auth';
+import { DeepSeekClient } from '../client';
+import { getApiModelId, getBaseUrl, getMaxTokens, getRequestTimeoutMs } from '../config';
+import { isApiKeyRequired, isOfficialDeepSeekBaseUrl } from '../endpoint';
+import { t } from '../i18n';
+import { getModels } from '../models/registry';
+import type { DeepSeekMessage, DeepSeekRequest } from '../types';
+import { convertMessages, countMessageChars } from './convert';
+import {
+	dumpDeepSeekRequest,
+	type CacheDiagnosticsRecorder,
+	type CacheDiagnosticsRun,
+} from './debug';
+import { getConfiguredThinkingEffort, type ModelConfigurationOptions } from './models';
+import type { ReplayMarkerMetadata } from './replay';
+import { classifyDeepSeekRequest, shouldForceThinkingNone, type RequestKind } from './routing';
+import type { ConversationSegment } from './segment';
+import { buildThinkingRequestFields } from './thinking';
+import { collectTrailingToolResultIds, prepareRequestTools } from './tools/request';
+import type { VisionResolutionResult, VisionResolutionStats } from './vision';
+import { resolveImageMessages, type VisionDescriber } from './vision';
+
+export interface PreparedChatRequest {
+	client: DeepSeekClient;
+	request: DeepSeekRequest;
+	isThinkingModel: boolean;
+	totalRequestChars: number;
+	hasNativeImages: boolean;
+	trailingToolResultIds: string[];
+	cacheDiagnostics: CacheDiagnosticsRun;
+	requestKind: RequestKind;
+	segment: ConversationSegment;
+	replayMarkerMetadata: ReplayMarkerMetadata;
+	visionMarkerTextChars?: number;
+	initialResponseNotice?: string;
+}
+
+export interface PrepareChatRequestOptions {
+	authManager: AuthManager;
+	globalStorageUri: vscode.Uri;
+	modelInfo: vscode.LanguageModelChatInformation;
+	segment: ConversationSegment;
+	messages: readonly vscode.LanguageModelChatRequestMessage[];
+	options: vscode.ProvideLanguageModelChatResponseOptions;
+	token: vscode.CancellationToken;
+	cacheDiagnostics: CacheDiagnosticsRecorder;
+	getVisionDescriber: () => Promise<VisionDescriber | undefined>;
+}
+
+export async function prepareChatRequest({
+	authManager,
+	globalStorageUri,
+	modelInfo,
+	segment,
+	messages,
+	options,
+	token,
+	cacheDiagnostics,
+	getVisionDescriber,
+}: PrepareChatRequestOptions): Promise<PreparedChatRequest> {
+	const baseUrl = getBaseUrl();
+	const apiKey = await authManager.getApiKey();
+	if (!apiKey && isApiKeyRequired(baseUrl)) {
+		throw new Error(t('auth.notConfigured'));
+	}
+
+	const client = new DeepSeekClient(baseUrl, apiKey, getRequestTimeoutMs());
+	const modelDef = getModels().find((m) => m.id === modelInfo.id);
+	const thinkingCapability = modelDef?.capabilities.thinking;
+	const isThinkingModel = Boolean(thinkingCapability);
+	const nativeImageInput = modelDef?.capabilities.nativeImageInput === true;
+	const maxTokens = getMaxTokens();
+
+	// Flash/Pro are declared as non-native vision models and therefore resolve
+	// image inputs through the configured/default proxy route (Vision Exp in auto mode).
+	const visionResolution: VisionResolutionResult = nativeImageInput
+		? createNativeVisionResolution(messages)
+		: await resolveImageMessages(messages, token, getVisionDescriber);
+
+	const resolvedMessages = visionResolution.messages;
+
+	const deepseekMessages = convertMessages(resolvedMessages, isThinkingModel, nativeImageInput);
+	if (nativeImageInput) {
+		// For native-image models, count images after conversion so diagnostics reflect
+		// what is actually forwarded in the DeepSeek payload.
+		visionResolution.stats.forwardedImageParts = countNativeForwardedImageParts(deepseekMessages);
+		visionResolution.stats.droppedImageParts = Math.max(
+			0,
+			visionResolution.stats.inputImageParts - visionResolution.stats.forwardedImageParts,
+		);
+	}
+	const tools = prepareRequestTools(modelDef?.capabilities.toolCalling, options);
+
+	const totalRequestChars = countMessageChars(deepseekMessages);
+	const hasNativeImages = hasNativeImageParts(deepseekMessages);
+	const baseRequest: DeepSeekRequest = {
+		model: getApiModelId(modelInfo.id),
+		messages: deepseekMessages,
+		stream: true,
+		tools,
+		tool_choice: tools && tools.length > 0 ? ('auto' as const) : undefined,
+		max_tokens: maxTokens,
+	};
+	const requestKind = classifyDeepSeekRequest({
+		request: baseRequest,
+		inputMessages: messages,
+	});
+	const configuredThinkingEffort = thinkingCapability
+		? getConfiguredThinkingEffort(options as ModelConfigurationOptions, thinkingCapability)
+		: 'none';
+	// Only force helper requests into disabled thinking on the official API.
+	// Custom endpoints keep their configured effort to preserve pre-#137 request shape.
+	const forceNoneThinking =
+		shouldForceThinkingNone(requestKind) && isOfficialDeepSeekBaseUrl(baseUrl);
+	const thinkingEffort = forceNoneThinking ? 'none' : configuredThinkingEffort;
+	const request: DeepSeekRequest = {
+		...baseRequest,
+		...(modelDef ? buildThinkingRequestFields(modelDef, thinkingEffort) : {}),
+	};
+	dumpDeepSeekRequest(request, {
+		globalStorageUri,
+		segment,
+		requestKind,
+		vscodeModelId: modelInfo.id,
+		isThinkingModel,
+		thinkingEffort,
+		maxTokens,
+		inputMessages: messages,
+		resolvedMessages,
+		requestOptions: options,
+		visionModelId: visionResolution.visionModelId,
+		visionProxySource: visionResolution.visionProxySource,
+		visionStats: visionResolution.stats,
+	});
+
+	const diagnosticsRun = cacheDiagnostics.beginRequest({
+		request,
+		segment,
+		requestKind,
+		vscodeModelId: modelInfo.id,
+		isThinkingModel,
+		thinkingEffort,
+		maxTokens,
+		inputMessages: messages,
+		resolvedMessages,
+		visionModelId: visionResolution.visionModelId,
+		visionProxySource: visionResolution.visionProxySource,
+		visionStats: visionResolution.stats,
+	});
+
+	return {
+		client,
+		request,
+		isThinkingModel,
+		totalRequestChars,
+		hasNativeImages,
+		trailingToolResultIds: collectTrailingToolResultIds(deepseekMessages),
+		cacheDiagnostics: diagnosticsRun,
+		requestKind,
+		segment,
+		replayMarkerMetadata: visionResolution.replayMarkerMetadata,
+		visionMarkerTextChars: visionResolution.stats.markerVisionTextChars || undefined,
+		initialResponseNotice: visionResolution.initialResponseNotice,
+	};
+}
+
+function hasNativeImageParts(messages: DeepSeekMessage[]): boolean {
+	for (const message of messages) {
+		if (typeof message.content === 'string') {
+			continue;
+		}
+		for (const part of message.content) {
+			if (part.type === 'image_url') {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/**
+ * Build a lightweight resolution result for native-image models.
+ * Native mode does not run proxy description, but still records input image
+ * counts/bytes so diagnostics are no longer reported as all-zero.
+ */
+function createNativeVisionResolution(
+	messages: readonly vscode.LanguageModelChatRequestMessage[],
+): VisionResolutionResult {
+	const stats = createNativeVisionResolutionStats();
+	for (const message of messages) {
+		let imagePartsInMessage = 0;
+		for (const part of message.content) {
+			if (part instanceof vscode.LanguageModelDataPart && part.mimeType.startsWith('image/')) {
+				imagePartsInMessage += 1;
+				stats.inputImageBytes += part.data.byteLength;
+			}
+		}
+		if (imagePartsInMessage > 0) {
+			stats.inputImageMessages += 1;
+			stats.inputImageParts += imagePartsInMessage;
+		}
+	}
+
+	if (stats.inputImageParts > 0) {
+		stats.imageHandlingMode = 'native';
+	}
+
+	return {
+		messages,
+		stats,
+		replayMarkerMetadata: {},
+	};
+}
+
+/** Create a zeroed stats object that matches VisionResolutionStats shape. */
+function createNativeVisionResolutionStats(): VisionResolutionStats {
+	return {
+		imageHandlingMode: 'none',
+		inputImageParts: 0,
+		inputImageMessages: 0,
+		inputImageBytes: 0,
+		currentImageMessages: 0,
+		generatedImageMessages: 0,
+		replayedImageMessages: 0,
+		omittedImageMessages: 0,
+		unavailableImageMessages: 0,
+		failedImageMessages: 0,
+		forwardedImageParts: 0,
+		droppedImageParts: 0,
+		markerVisionTextChars: 0,
+		invalidMarkerVisionMetadata: 0,
+	};
+}
+
+/** Count native image parts that survived conversion into image_url content. */
+function countNativeForwardedImageParts(messages: readonly DeepSeekMessage[]): number {
+	let total = 0;
+	for (const message of messages) {
+		if (typeof message.content === 'string') {
+			continue;
+		}
+		for (const part of message.content) {
+			if (part.type === 'image_url') {
+				total += 1;
+			}
+		}
+	}
+	return total;
+}
