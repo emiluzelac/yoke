@@ -1,4 +1,5 @@
 import vscode from 'vscode';
+import { isCancellationError } from '../cancellation';
 import { t } from '../i18n';
 import { logger } from '../logger';
 import { runMigration } from '../migration';
@@ -40,7 +41,13 @@ export async function deactivate(): Promise<void> {
 	try {
 		await activeProvider?.prepareForDeactivate();
 	} catch (error) {
-		logger.warn(t('extension.deactivateFailed'), error);
+		// Same reasoning as the provider: the host cancels during teardown, and
+		// that is not something to report as a failure.
+		if (isCancellationError(error)) {
+			logger.debug('Deactivate cancelled by the host');
+		} else {
+			logger.warn(t('extension.deactivateFailed'), error);
+		}
 	} finally {
 		activeProvider = undefined;
 		logger.info('Extension deactivated');

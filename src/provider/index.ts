@@ -1,4 +1,5 @@
 import vscode from 'vscode';
+import { isCancellationError } from '../cancellation';
 import { AuthManager } from '../auth';
 import { getBaseUrl, getStabilizeToolListEnabled } from '../config';
 import { isApiKeyRequired } from '../endpoint';
@@ -109,13 +110,21 @@ export class DeepSeekChatProvider implements vscode.LanguageModelChatProvider {
 
 		// Force the host to re-pull `provideLanguageModelChatInformation` synchronously
 		// before the extension unloads. With `isActive = false` we now return [],
-		// which makes Copilot Chat drop DeepSeek models from the picker immediately
+		// which makes Copilot Chat drop our models from the picker immediately
 		// instead of leaving stale entries behind after deactivate. The returned
 		// model list itself is unused — we only call this for its side effect.
 		try {
 			await vscode.lm.selectChatModels({ vendor: 'yoke' });
 		} catch (error) {
-			logger.warn('Failed to refresh DeepSeek models during deactivate', error);
+			// The host cancels in-flight work while tearing the extension host down,
+			// so cancellation here is the ordinary path on every window reload — not
+			// a failure. Reporting it as one put four warnings on the extension's
+			// error badge for doing exactly what it was supposed to do.
+			if (isCancellationError(error)) {
+				logger.debug('Model picker refresh cancelled during deactivate');
+				return;
+			}
+			logger.warn('Failed to refresh the model picker during deactivate', error);
 		}
 	}
 
