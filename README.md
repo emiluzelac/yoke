@@ -230,16 +230,25 @@ chat-completions URL with its own model id, no key required.
 
 ### Remote-SSH, Dev Containers, and WSL
 
-Yoke runs on your local machine by default, because that is usually where your
-endpoint is reachable — often through an SSH tunnel to `127.0.0.1`. Without this,
-opening a remote window would run Yoke on the remote host, where `127.0.0.1` is
-that machine and every request is refused with `ECONNREFUSED`.
+In a remote window Copilot Chat runs on the **remote** host, and VS Code only
+lets it use language models registered in that same extension host. So Yoke
+runs on the remote too — it prefers the workspace host — which means:
 
-If the model server runs on the remote host instead, move Yoke there:
+- **Install it on the remote.** Extensions view → *Install in SSH: host* (or
+  WSL / Dev Container). A Yoke that is only installed locally stays in the UI
+  host, where Copilot Chat cannot see it. The failure is otherwise silent —
+  Copilot quietly answers from its own default model, and if that model rejects
+  the reasoning effort you picked for Yoke, the turn fails with a 400 — so Yoke
+  logs a warning and shows one at activation when it finds itself there.
+- **`yoke.baseUrl` and `yoke.registryUrl` are per machine.** They are resolved
+  where Yoke runs. If the endpoint is reached differently from the remote host —
+  say `127.0.0.1:8888` is an SSH tunnel on your workstation — set them in the
+  window's **Remote** settings and forward the endpoint to the remote host
+  (`ssh -L`, or serve it there). Local windows keep using the User values.
 
-```json
-"remote.extensionKind": { "yoketools.yoke": ["workspace"] }
-```
+Pinning Yoke to the UI host with `remote.extensionKind` made `127.0.0.1`
+resolve on the workstation, but it put the models where Copilot Chat could not
+use them. Don't.
 
 ## Compared to alternatives
 

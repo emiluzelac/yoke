@@ -200,6 +200,11 @@ const zh: Translations = {
 		'[{0}] 网络请求失败。请检查网络连接、防火墙或代理设置，以及自定义 baseUrl。',
 	'error.unknown': 'DeepSeek 请求失败：{0}',
 
+	// Placement
+	'placement.strandedInUiHost':
+		'Yoke 正在本地运行，但当前窗口已连接到远程（{0}）。Copilot Chat 在远程主机上运行，只能使用在该主机注册的模型，因此会悄悄改用 GitHub 托管的模型。请在远程主机上安装 Yoke，并将 yoke.baseUrl 指向远程主机可访问的地址。',
+	'placement.learnMore': '了解更多',
+
 	// Extension
 	'extension.activateFailed': 'Yoke 激活失败，请运行 "Yoke: 查看日志" 查看详情。',
 	'extension.deactivateFailed': 'DeepSeek 停用异常',
@@ -422,6 +427,11 @@ const en: Translations = {
 	'error.network.generic':
 		'[{0}] Network request failed. Check your network connection, firewall, or proxy settings, and your custom baseUrl.',
 	'error.unknown': 'Request failed: {0}',
+
+	// Placement
+	'placement.strandedInUiHost':
+		'Yoke is running on your local machine, but this window is connected to a remote ({0}). Copilot Chat runs on the remote host and can only use models registered there, so it will fall back to a GitHub-hosted model without saying so. Install Yoke on the remote and point yoke.baseUrl at an endpoint the remote can reach.',
+	'placement.learnMore': 'Learn more',
 
 	// Extension
 	'extension.activateFailed': 'Yoke failed to activate. Run "Yoke: Show Logs" for details.',

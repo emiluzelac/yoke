@@ -37,8 +37,8 @@
     "chat"
   ],
   "extensionKind": [
-    "ui",
-    "workspace"
+    "workspace",
+    "ui"
   ],
   "activationEvents": [
     "onUri",
@@ -124,11 +124,13 @@
       "properties": {
         "yoke.baseUrl": {
           "type": "string",
+          "scope": "machine-overridable",
           "default": "https://api.deepseek.com",
           "description": "%yoke.config.baseUrl.description%"
         },
         "yoke.registryUrl": {
           "type": "string",
+          "scope": "machine-overridable",
           "default": "",
           "markdownDescription": "%yoke.config.registryUrl.description%"
         },
