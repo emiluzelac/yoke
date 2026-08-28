@@ -1,4 +1,9 @@
-<h1 align="center">Yoke</h1>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/emiluzelac/yoke/main/resources/yoke-combomark-dark.png">
+    <img src="https://raw.githubusercontent.com/emiluzelac/yoke/main/resources/yoke-combomark.png" width="420" alt="Yoke">
+  </picture>
+</p>
 
 <p align="center"><strong>Your model. Your machine. Your code.</strong></p>
 

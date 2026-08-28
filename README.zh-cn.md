@@ -1,4 +1,9 @@
-<h1 align="center">Yoke</h1>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/emiluzelac/yoke/main/resources/yoke-combomark-dark.png">
+    <img src="https://raw.githubusercontent.com/emiluzelac/yoke/main/resources/yoke-combomark.png" width="420" alt="Yoke">
+  </picture>
+</p>
 
 <p align="center"><strong>你的模型，你的机器，你的代码。</strong></p>
 
