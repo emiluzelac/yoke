@@ -61,7 +61,7 @@ Because this plugs into Copilot's native provider API, you get the full stack fo
 - **Agent mode** — autonomous multi-step tasks
 - **Tool calling** — file edits, terminal, workspace search, Git, tests
 - **Instructions & skills** — all your `.instructions.md`, `AGENTS.md`, and skills just work
-- **Prompt caching stats** — cache hit rate logged in the output channel, when your endpoint reports it
+- **Prompt caching stats** — cache hit rate logged in the output channel, from DeepSeek's `prompt_cache_hit_tokens` or the OpenAI-style `prompt_tokens_details.cached_tokens` that vLLM and SGLang report
 
 ### Secure by Default
 API key lives in VS Code's `SecretStorage` (OS keychain on macOS / Windows / Linux). Never in `settings.json`, never in your Git history.

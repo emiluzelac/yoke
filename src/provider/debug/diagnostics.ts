@@ -13,6 +13,7 @@ import {
 	type RequestKind,
 } from '../routing';
 import type { ConversationSegment } from '../segment';
+import { formatCacheHitRate, getCacheStats } from '../usage';
 import { ACTIVATE_TOOL_PREFIX } from '../tools/consts';
 import type { ActivatePreflightInspection } from '../tools/preflight';
 import type { VisionResolutionStats as VisionPipelineStats, VisionProxySource } from '../vision';
@@ -625,7 +626,7 @@ class ActiveCacheDiagnosticsRun implements CacheDiagnosticsRun {
 	onUsage(usage: DeepSeekUsage, charsPerToken: number): void {
 		logUsage(usage, charsPerToken, this.usageLogContext, this.requestId);
 		if (this.resultComparison) {
-			const hitRate = getCacheHitRate(usage);
+			const hitRate = formatCacheHitRate(getCacheStats(usage));
 			logger.info(
 				formatRequestLogLine(
 					this.snapshot.requestKind,
@@ -806,25 +807,17 @@ function logUsage(
 	context: UsageLogContext,
 	requestId?: number,
 ): void {
-	const cacheHit = usage.prompt_cache_hit_tokens ?? 0;
-	const cacheMiss = usage.prompt_cache_miss_tokens ?? 0;
+	const cache = getCacheStats(usage);
 	logger.info(
 		formatRequestLogLine(
 			context.requestKind,
 			`tokens${requestId ? ` #${requestId}` : ''}: ` +
 				formatModelFields(context.vscodeModelId, context.apiModelId) +
 				` prompt=${usage.prompt_tokens} completion=${usage.completion_tokens}` +
-				` | cache: hit=${cacheHit} miss=${cacheMiss} rate=${getCacheHitRate(usage)}%` +
+				` | cache: hit=${cache.hit} miss=${cache.miss} rate=${formatCacheHitRate(cache)}%` +
 				` | chars/tok=${charsPerToken.toFixed(2)}`,
 		),
 	);
-}
-
-function getCacheHitRate(usage: DeepSeekUsage): string {
-	const cacheHit = usage.prompt_cache_hit_tokens ?? 0;
-	const cacheMiss = usage.prompt_cache_miss_tokens ?? 0;
-	const cacheTotal = cacheHit + cacheMiss;
-	return cacheTotal > 0 ? ((cacheHit / cacheTotal) * 100).toFixed(0) : 'n/a';
 }
 
 function summarizeVisionResolution(

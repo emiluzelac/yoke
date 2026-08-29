@@ -53,6 +53,11 @@ export interface DeepSeekUsage {
 	total_tokens: number;
 	prompt_cache_hit_tokens?: number;
 	prompt_cache_miss_tokens?: number;
+	/** OpenAI-style cache accounting, as sent by vLLM, SGLang and the OpenAI API. */
+	prompt_tokens_details?: {
+		cached_tokens?: number | null;
+		multimodal_tokens?: number | null;
+	};
 }
 
 export interface DeepSeekRequest {
