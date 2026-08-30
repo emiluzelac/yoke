@@ -1,6 +1,10 @@
 import vscode from 'vscode';
 import { t } from '../../../../i18n';
-import { DEFAULT_VISION_MODEL_ID, IMAGE_DESCRIPTION_PROMPT } from '../../consts';
+import {
+	DEFAULT_VISION_MODEL_ID,
+	DEFAULT_VISION_TIMEOUT_MS,
+	IMAGE_DESCRIPTION_PROMPT,
+} from '../../consts';
 import { logVSCodeVisionModelNotFound, logVSCodeVisionModelSelected } from '../../log';
 import type {
 	VisionDescriber,
@@ -131,6 +135,12 @@ export function getVisionPrompt(): string {
 	return (
 		config.get<string>('visionPrompt', IMAGE_DESCRIPTION_PROMPT).trim() || IMAGE_DESCRIPTION_PROMPT
 	);
+}
+
+export function getVisionTimeoutMs(): number {
+	const config = vscode.workspace.getConfiguration('yoke');
+	const configured = config.get<number>('visionTimeoutMs', DEFAULT_VISION_TIMEOUT_MS);
+	return Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_VISION_TIMEOUT_MS;
 }
 
 export function getConfiguredVisionModelKey(): string | undefined {

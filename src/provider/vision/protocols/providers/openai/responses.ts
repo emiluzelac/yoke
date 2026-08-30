@@ -1,4 +1,5 @@
 import { t } from '../../../../../i18n';
+import { DEFAULT_VISION_MAX_OUTPUT_TOKENS } from '../../../consts';
 import type { VisionDescriptionRequest, VisionProxyConfig } from '../../../types';
 import { VisionProxyError } from '../../errors';
 import type { VisionProviderAdapter } from '../types';
@@ -15,6 +16,7 @@ export const openAIResponsesAdapter: VisionProviderAdapter = {
 
 function createBody(config: VisionProxyConfig, request: VisionDescriptionRequest): object {
 	return {
+		max_output_tokens: DEFAULT_VISION_MAX_OUTPUT_TOKENS,
 		...config.extraBody,
 		model: config.modelId,
 		input: [

@@ -6,6 +6,7 @@ import {
 } from '../../../client/error/network';
 import { t } from '../../../i18n';
 import { safeStringify } from '../../../json';
+import { DEFAULT_VISION_TIMEOUT_MS } from '../consts';
 import type { VisionDescriptionRequest, VisionProxyConfig } from '../types';
 import {
 	addVisionProxyDiagnostics,
@@ -18,9 +19,9 @@ import { createProviderHeaders } from './headers';
 import { getVisionProviderAdapter } from './providers';
 import { resolveVisionEndpoint } from './url';
 
-const DEFAULT_TIMEOUT_MS = 30_000;
-
 export class VisionProxyClient {
+	constructor(private readonly timeoutMs: number = DEFAULT_VISION_TIMEOUT_MS) {}
+
 	async describe(
 		config: VisionProxyConfig,
 		apiKey: string | undefined,
@@ -41,12 +42,13 @@ export class VisionProxyClient {
 			headers,
 			request,
 			apiKey,
+			this.timeoutMs,
 		);
 		const responseValue = await postJson(endpoint, {
 			context,
 			headers,
 			body,
-			timeoutMs: DEFAULT_TIMEOUT_MS,
+			timeoutMs: this.timeoutMs,
 			token: request.token,
 		});
 
@@ -183,6 +185,7 @@ function createVisionProxyRequestDiagnostics(
 	headers: Record<string, string>,
 	request: VisionDescriptionRequest,
 	apiKey: string | undefined,
+	timeoutMs: number,
 ): VisionProxyRequestDiagnostics {
 	return {
 		phase,
@@ -190,7 +193,7 @@ function createVisionProxyRequestDiagnostics(
 		apiType: config.apiType,
 		modelId: config.modelId,
 		endpoint,
-		timeoutMs: DEFAULT_TIMEOUT_MS,
+		timeoutMs,
 		hasApiKey: Boolean(apiKey?.trim()),
 		headerNames: Object.keys(headers).sort(),
 		imageCount: request.images.length,

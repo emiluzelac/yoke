@@ -1,10 +1,9 @@
 import { t } from '../../../../../i18n';
+import { DEFAULT_VISION_MAX_OUTPUT_TOKENS } from '../../../consts';
 import type { VisionDescriptionRequest, VisionProxyConfig } from '../../../types';
 import { VisionProxyError } from '../../errors';
 import type { VisionProviderAdapter } from '../types';
 import { isRecord, toBase64 } from '../utils';
-
-const DEFAULT_MAX_OUTPUT_TOKENS = 1024;
 
 export const anthropicMessagesAdapter: VisionProviderAdapter = {
 	createBody(config, request) {
@@ -17,7 +16,7 @@ export const anthropicMessagesAdapter: VisionProviderAdapter = {
 
 function createBody(config: VisionProxyConfig, request: VisionDescriptionRequest): object {
 	return {
-		max_tokens: DEFAULT_MAX_OUTPUT_TOKENS,
+		max_tokens: DEFAULT_VISION_MAX_OUTPUT_TOKENS,
 		...config.extraBody,
 		model: config.modelId,
 		messages: [

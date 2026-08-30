@@ -30,3 +30,20 @@ export const IMAGE_DESCRIPTION_UNAVAILABLE = '[Image Description unavailable]';
  */
 export const IMAGE_DESCRIPTION_PREFIX = '[Image Description: ';
 export const IMAGE_DESCRIPTION_SUFFIX = ']';
+
+/**
+ * Ceiling on how long a description may run.
+ *
+ * Without an explicit cap an OpenAI-compatible server falls back to whatever is
+ * left of its context window, so one degenerate sample can generate for minutes
+ * and be killed by the client timeout instead of returning a description. A
+ * description only needs to be long enough to stand in for the image, and the
+ * Anthropic adapter has always bounded it at this value.
+ *
+ * Set `max_tokens` (or `max_output_tokens` on the Responses API) in the vision
+ * endpoint's extra body to override it.
+ */
+export const DEFAULT_VISION_MAX_OUTPUT_TOKENS = 1024;
+
+/** Fallback request timeout when `yoke.visionTimeoutMs` is unset. */
+export const DEFAULT_VISION_TIMEOUT_MS = 30_000;

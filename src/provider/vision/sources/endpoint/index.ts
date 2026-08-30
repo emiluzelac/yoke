@@ -1,5 +1,6 @@
 import { VisionProxyClient } from '../../protocols/client';
 import type { VisionDescriptionRequest, VisionDescriber, VisionProxyConfig } from '../../types';
+import { getVisionTimeoutMs } from '../vscode';
 
 export function createEndpointVisionDescriber(
 	config: VisionProxyConfig,
@@ -10,7 +11,7 @@ export function createEndpointVisionDescriber(
 
 class EndpointVisionDescriber implements VisionDescriber {
 	readonly source = 'api-endpoint';
-	private readonly client = new VisionProxyClient();
+	private readonly client = new VisionProxyClient(getVisionTimeoutMs());
 
 	constructor(
 		private readonly config: VisionProxyConfig,

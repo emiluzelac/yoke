@@ -272,6 +272,15 @@
           ],
           "markdownDescription": "%yoke.config.visionModel.description%"
         },
+        "yoke.visionTimeoutMs": {
+        	"type": "number",
+        	"default": 30000,
+        	"minimum": 1000,
+        	"tags": [
+        		"advanced"
+        	],
+        	"markdownDescription": "%yoke.config.visionTimeoutMs.description%"
+        },
         "yoke.visionPrompt": {
           "type": "string",
           "editPresentation": "multilineText",

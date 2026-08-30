@@ -31,6 +31,7 @@
   "yoke.config.modelIdOverrides.deepseek-v4-flash-vision-exp.description": "DeepSeek V4 Flash Vision Exp 的 API 模型 ID。",
   "yoke.config.customModels.description": "用于替代内置 DeepSeek 云端模型的模型列表。适用于自托管或兼容 OpenAI 的接口。每一项都需声明自己的 `id`（原样发送给 API）、上下文长度和能力。注意自托管服务通常由提示词和补全共享同一预算，因此 `maxInputTokens` 应设为服务上限减去 `maxOutputTokens`。留空则使用内置模型。",
   "yoke.config.visionModel.description": "供不支持原生图片输入的模型使用的视觉代理。未设置时，自动模式会在可用时选择内置的 DeepSeek V4 Flash Vision Exp。可通过[配置视觉代理](command:yoke.setVisionModel)指定其他 VS Code 模型或接口。",
+  "yoke.config.visionTimeoutMs.description": "放弃之前等待视觉代理描述图片的毫秒数。自托管端点较慢或多方共用时可调高。",
   "yoke.config.visionPrompt.description": "视觉代理用于描述图片附件的提示词。对原生支持图片输入的模型无效。\n\n[配置视觉代理](command:yoke.setVisionModel)",
   "yoke.config.requestTimeoutMs.description": "请求在多长时间内没有收到任何数据后被放弃（毫秒）。设为 `0` 表示无限等待。自托管服务在返回第一个字节之前，可能需要数分钟来预填充较长的对话，因此默认值为 15 分钟，而不是 Node 对 `fetch` 施加的 5 分钟上限。若长时间的 Agent 会话被中断，请调大此值。",
   "yoke.config.registryUrl.description": "模型注册表的 URL，用于列出你运行的接口，例如 `http://127.0.0.1:8899/registry`。设置且可达时，其中的模型会替代 `customModels`，从而在一处描述整个集群，无需复制到每台机器。扩展不会等待注册表：若不可达，会沿用上次返回的模型，`customModels` 仍作为兜底。留空则手动配置模型。"
