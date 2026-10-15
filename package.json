@@ -318,7 +318,7 @@
     "login": "vsce login yoketools"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.6.5",
     "@types/vscode": "^1.116.0",
     "@vscode/vsce": "^3.9.1",
     "ovsx": "0.10.12",
