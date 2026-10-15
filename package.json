@@ -320,11 +320,17 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@types/vscode": "^1.116.0",
-    "@vscode/vsce": "^3.9.1",
+    "@vscode/vsce": "^4.0.0",
     "ovsx": "0.10.12",
     "oxfmt": "^0.47.0",
     "oxlint": "^1.62.0",
     "typescript": "^6.0.3"
   },
-  "homepage": "https://yoke.codes"
+  "homepage": "https://yoke.codes",
+  "overrides": {
+    "tinypool": "2.1.2",
+    "ovsx": {
+      "@vscode/vsce": "$@vscode/vsce"
+    }
+  }
 }
