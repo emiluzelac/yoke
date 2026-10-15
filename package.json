@@ -323,7 +323,7 @@
     "@vscode/vsce": "^3.9.1",
     "ovsx": "0.10.12",
     "oxfmt": "^0.47.0",
-    "oxlint": "^1.62.0",
+    "oxlint": "^1.87.0",
     "typescript": "^6.0.3"
   },
   "homepage": "https://yoke.codes"
