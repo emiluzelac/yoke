@@ -13,6 +13,7 @@ import type {
 	RequestErrorContext,
 } from '../types';
 import { getNetworkErrorCauseInfo, getNetworkErrorCode, getNetworkErrorMessage } from './network';
+import { escapeBoldText } from './markdown';
 export type { DeepSeekRequestErrorKind, ErrorActionUrls } from '../types';
 
 const errorActionUrlStore = (() => {
@@ -342,10 +343,6 @@ function truncateSingleLine(value: string): string {
 	return singleLine.length > MAX_DIAGNOSTIC_FIELD_LENGTH
 		? `${singleLine.slice(0, MAX_DIAGNOSTIC_FIELD_LENGTH)}...`
 		: singleLine;
-}
-
-function escapeBoldText(value: string): string {
-	return value.replace(/\*/g, '\\*');
 }
 
 function identifyApiProvider(baseUrl: string): ApiProviderId | undefined {
