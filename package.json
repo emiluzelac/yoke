@@ -318,13 +318,13 @@
     "login": "vsce login yoketools"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "@types/vscode": "^1.116.0",
+    "@types/node": "^26.6.5",
+    "@types/vscode": "^1.140.0",
     "@vscode/vsce": "^4.0.0",
-    "ovsx": "0.10.12",
-    "oxfmt": "^0.47.0",
-    "oxlint": "^1.62.0",
-    "typescript": "^6.0.3"
+    "ovsx": "1.2.0",
+    "oxfmt": "^0.73.0",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2"
   },
   "homepage": "https://yoke.codes",
   "overrides": {
