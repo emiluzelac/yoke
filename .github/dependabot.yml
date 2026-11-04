@@ -19,6 +19,12 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 2
+    ignore:
+      # @types/vscode must not be newer than engines.vscode: vsce refuses to
+      # package otherwise, and raising engines.vscode drops users on older
+      # VS Code. Move both together, by hand, when the floor is raised.
+      - dependency-name: "@types/vscode"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
     groups:
       security-updates:
         applies-to: security-updates
