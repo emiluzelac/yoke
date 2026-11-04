@@ -329,6 +329,7 @@
   "homepage": "https://yoke.codes",
   "overrides": {
     "tinypool": "2.1.2",
+    "minimatch": "^11.0.1",
     "ovsx": {
       "@vscode/vsce": "$@vscode/vsce"
     }
