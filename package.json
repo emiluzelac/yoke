@@ -3,7 +3,7 @@
   "displayName": "Yoke: Local Models for Copilot Chat",
   "description": "Run self-hosted DeepSeek, Qwen, GLM and other OpenAI-compatible models in Copilot Chat — no hosted API key, no per-token charges.",
   "icon": "resources/icon.png",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "yoketools",
   "license": "MIT",
   "repository": {
