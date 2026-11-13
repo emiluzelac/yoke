@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/emiluzelac/yoke/compare/v0.2.0...v0.3.0) (2026-11-13)
+
+
+### Features
+
+* show Yoke's pilot in the model picker instead of the default sparkle ([08a9e6a](https://github.com/emiluzelac/yoke/commit/08a9e6addf70e0accdd0575a03e72694837f0c44))
+
+
+### Bug Fixes
+
+* read OpenAI-style cached_tokens for cache stats ([1ba9c06](https://github.com/emiluzelac/yoke/commit/1ba9c061c3991ccf22d657eaafcd5548dfbff19a))
+
 ## [0.2.0](https://github.com/emiluzelac/yoke/compare/v0.1.0...v0.2.0) (2026-08-28)
 
 
