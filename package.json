@@ -47,10 +47,20 @@
   "enabledApiProposals": [],
   "main": "./out/extension.js",
   "contributes": {
+    "icons": {
+      "yoke-logo": {
+        "description": "Yoke",
+        "default": {
+          "fontPath": "resources/yoke-icons.woff",
+          "fontCharacter": "\\E001"
+        }
+      }
+    },
     "languageModelChatProviders": [
       {
         "vendor": "yoke",
-        "displayName": "Yoke"
+        "displayName": "Yoke",
+        "icon": "$(yoke-logo)"
       }
     ],
     "commands": [
