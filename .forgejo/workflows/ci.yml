@@ -2,8 +2,8 @@ name: CI
 
 # Runs in a disposable VM on the estate's CI host. Since 2026-11-15 Yoke's
 # canonical repository is on our own (private) Forgejo, which mirrors every
-# push to github.com/emiluzelac/yoke, the public face, where the Release
-# workflow publishes a v* tag. These jobs run on the guest itself (its Node 24 runs the
+# push to github.com/emiluzelac/yoke, the public face. A v* tag is published by
+# release.yml here, on Forgejo. These jobs run on the guest itself (its Node 24 runs the
 # actions, which are their Node 20 majors).
 
 on:

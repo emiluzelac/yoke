@@ -8,10 +8,10 @@
 // this script does its job on Forgejo instead: it writes the CHANGELOG.md section from
 // the conventional commits since the last tag (release-please's sections and format),
 // sets the version in package.json and package-lock.json, commits
-// "chore(main): release <version>", tags v<version> and pushes both to Forgejo. The tag
-// reaches GitHub through the mirror, and GitHub's Release workflow
-// (.github/workflows/release.yml) publishes the VSIX to the VS Code Marketplace and
-// Open VSX and creates the GitHub release with this section as its notes.
+// "chore(main): release <version>", tags v<version> and pushes both to Forgejo, where the
+// tag runs .forgejo/workflows/release.yml: it publishes the VSIX to the VS Code
+// Marketplace (and Open VSX when that token is set) and creates the Forgejo release with
+// this section as its notes. The mirror carries the commit and the tag to GitHub.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -50,7 +50,8 @@ if (!skipCi) {
   if (!token) die("no Forgejo token (FORGEJO_TOKEN or ~/.config/forgejo/token) to check CI; pass --skip-ci-check after checking the run yourself");
   const res = await fetch(`${api}/actions/runs?limit=50`, { headers: { Authorization: `token ${token}` } });
   if (!res.ok) die(`Forgejo answered ${res.status} for the CI runs`);
-  const run = ((await res.json()).workflow_runs || []).find((r) => r.head_sha === head && r.event === "push");
+  // Forgejo names a run's commit `commit_sha` (its `head_sha` is empty).
+  const run = ((await res.json()).workflow_runs || []).find((r) => (r.commit_sha || r.head_sha) === head && r.event === "push" && r.workflow_id === "ci.yml");
   if (!run) die(`no CI run for ${head.slice(0, 8)} on main yet; wait for it`);
   if (run.status !== "success") die(`CI for ${head.slice(0, 8)} is ${run.status}; release only a green main`);
 }
@@ -82,4 +83,4 @@ git("add", "CHANGELOG.md", "package.json", "package-lock.json");
 git("commit", "-q", "-m", `chore(main): release ${version}`);
 git("tag", "-a", `v${version}`, "-m", `v${version}`);
 execFileSync("git", ["push", "origin", "main", `v${version}`], { stdio: "inherit" });
-console.log(`Released v${version} to Forgejo. The mirror takes the tag to GitHub, whose Release workflow publishes it:\n  ${REPO_URL}/actions/workflows/release.yml`);
+console.log(`Released v${version} to Forgejo; its Release workflow publishes it (Forgejo: Actions, workflow release.yml).`);
