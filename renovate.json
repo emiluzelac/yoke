@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Yoke's dependency updates: Renovate on our Forgejo since 2026-11-15, when Yoke's canonical repository moved there (GitHub is its mirror). Estate defaults come from the preset emiluzelac/renovate-config. npm patch and minor updates of 1.x-and-later packages merge themselves once Renovate has seen CI pass (lint, format, compile, tests, VSIX package); they reach users only in the next release (scripts/release.mjs). 0.x packages wait for review.",
+  "packageRules": [
+    {
+      "description": "npm patch, minor and digest updates of 1.x-and-later packages merge themselves after green CI, squashed.",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch", "digest", "pinDigest"],
+      "matchCurrentVersion": "!/^v?0\\./",
+      "automerge": true,
+      "automergeStrategy": "squash"
+    },
+    {
+      "description": "A 0.x npm package may break in any release: its own PR, reviewed.",
+      "matchManagers": ["npm"],
+      "matchCurrentVersion": "/^v?0\\./",
+      "groupName": null,
+      "groupSlug": null,
+      "automerge": false
+    },
+    {
+      "description": "@types/vscode must not be newer than engines.vscode: vsce refuses to package otherwise, and raising engines.vscode drops users on older VS Code. Move both together, by hand, when the floor is raised (carried over from Dependabot's ignore).",
+      "matchPackageNames": ["@types/vscode"],
+      "matchUpdateTypes": ["minor", "major"],
+      "enabled": false
+    }
+  ]
+}

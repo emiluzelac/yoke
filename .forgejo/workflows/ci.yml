@@ -1,0 +1,54 @@
+name: CI
+
+# Runs in a disposable VM on the estate's CI host. Since 2026-11-15 Yoke's
+# canonical repository is on our own (private) Forgejo, which mirrors every
+# push to github.com/emiluzelac/yoke, the public face, where the Release
+# workflow publishes a v* tag. These jobs run on the guest itself (its Node 24 runs the
+# actions, which are their Node 20 majors).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, x64, iam-ci-isolated]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run format:check
+
+      - run: npm run compile
+
+      - run: npm test
+
+      - run: mkdir -p dist && npm run package
+
+      # Forgejo's artifact store speaks the v3 protocol (upload-artifact@v4 fails).
+      - uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3.2.1
+        continue-on-error: true
+        with:
+          name: yoke.vsix
+          path: dist/*.vsix
+          retention-days: 30

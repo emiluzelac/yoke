@@ -1,8 +1,13 @@
 name: CI
 
+# Pull requests opened on GitHub only. Since 2026-11-15 Yoke's canonical
+# repository and its CI are on our own Forgejo (.forgejo/workflows/ci.yml),
+# which mirrors every push here; this keeps a check for an outside
+# contributor's pull request, on GitHub-hosted runners (a public repository
+# never runs on the estate's machines). A change that lands goes in through
+# Forgejo.
+
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 

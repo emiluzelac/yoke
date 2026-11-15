@@ -26,3 +26,6 @@ vscode.proposed.languageModelThinkingPart.d.ts
 scripts/**
 docs/superpowers/**
 docs/CHANGELOG.upstream.md
+.forgejo/**
+RELEASING.md
+renovate.json
