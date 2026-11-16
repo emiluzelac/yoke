@@ -46,7 +46,7 @@ jobs:
       - run: mkdir -p dist && npm run package
 
       # Forgejo's artifact store speaks the v3 protocol (upload-artifact@v4 fails).
-      - uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3.2.1
+      - uses: actions/upload-artifact@c6a366c94c3e0affe28c06c8df20a878f24da3cf # v3.2.2
         continue-on-error: true
         with:
           name: yoke.vsix
